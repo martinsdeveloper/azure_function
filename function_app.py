@@ -3,6 +3,7 @@ import datetime
 import json
 import logging
 import requests
+import os
 
 app = func.FunctionApp()
 
@@ -16,8 +17,8 @@ def random_joke(req: func.HttpRequest) -> func.HttpResponse:
             "Only GET requests are allowed.",
             status_code=405
         )
-    
-    resp = requests.get("https://api.chucknorris.io/jokes/random")
+
+    resp = requests.get(os.getenv("JOKE_URL"))
 
     joke_data = resp.json()
     joke_data["giffs"] = list(load_image(joke_data.get("value", "chuck norris")))
@@ -29,14 +30,13 @@ def process_query(query):
     if REQUIRED_STRING not in query[:3]:
         query.insert(0, "Chuck Norris")
 
-    return " ".join(query[:5])
+    return " ".join(query[:7])
 
 def load_image(query):
     logging.info(f'Aquiring gif for: {query}')
 
-    api_key = ""
-    limit = 1
-    url = f'http://api.giphy.com/v1/gifs/search?q={process_query(query.split())}&api_key={api_key}&limit={limit}'
+    api_key = os.getenv("GIPHY_TOKEN")
+    url = f'http://api.giphy.com/v1/gifs/search?q={process_query(query.split())}&api_key={api_key}&limit={os.getenv("GIFF_LIMIT")}'
 
     resp = requests.get(url)
     joke_data = resp.json()
