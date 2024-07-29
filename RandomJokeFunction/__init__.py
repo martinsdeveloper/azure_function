@@ -3,15 +3,19 @@ import json
 import logging
 import os
 import requests
+from enum import Enum
 
 app = func.FunctionApp()
 
 REQUIRED_STRING = "Chuck"
 
+class RequestType(Enum):
+    GET = "GET"
+
 @app.function_name("RandomJokeFunction")
 @app.route(route="random_joke", auth_level=func.AuthLevel.ANONYMOUS)
 def random_joke(req: func.HttpRequest) -> func.HttpResponse:
-    if req.method != "GET":
+    if req.method != RequestType.GET:
         return func.HttpResponse(
             "Only GET requests are allowed.",
             status_code=405
